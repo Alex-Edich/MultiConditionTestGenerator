@@ -16,8 +16,19 @@
       {
         "command": "mctg.helloWorld",
         "title": "Hello World"
+      }, {
+        "command": "mf.createSampleCode",
+        "title": "Create Sample Code"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "mf.createSampleCode",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
