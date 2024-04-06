@@ -19,12 +19,19 @@
       }, {
         "command": "mf.createSampleCode",
         "title": "Create Sample Code"
+      }, {
+        "command": "mf.sendParametersToPopup",
+        "title": "Generate Test Cases"
       }
     ],
     "menus": {
       "editor/context": [
         {
           "command": "mf.createSampleCode",
+          "group": "navigation"
+        }, {
+          "when": "mf.contextOptionVisible",
+          "command": "mf.sendParametersToPopup",
           "group": "navigation"
         }
       ]
