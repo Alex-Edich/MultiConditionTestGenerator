@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 		// Erstelle ein Webview-Panel
 		const panel = vscode.window.createWebviewPanel(
 			'popup', // Eindeutiger Bezeichner
-			'Creating tests for function: ' + functionName,
+			'mctg: ' + functionName,
 			vscode.ViewColumn.Beside,// One,
 			{}
 		);
@@ -71,42 +71,122 @@ export function activate(context: vscode.ExtensionContext) {
 		// HTML für das Popup erstellen
 		return `
 			<!DOCTYPE html>
-			<html lang="en">
-			<h2>Creating tests for function: ` + functionName + `</h2>
+			<html>
 			<head>
-				<meta charset="UTF-8">
-				<meta http-equiv="X-UA-Compatible" content="IE=edge">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-				<title>Popup</title>
+			<title>Page Title</title>
 			</head>
+			<style>
+				table.content, td.content, th.content {
+					border: 1px solid black;
+					border-collapse: collapse;
+				}
+				td {
+					padding: 2px;
+					padding-left: 5px;
+					padding-right: 5px;
+				}
+				input {
+					color: LightGray;
+					background-color: #2A2A2A;
+				}
+			</style>
 			<body>
-				<h2>3x3 Tabelle</h2>
-				<table border="1">
+				<h1>Multiple Condition Test Generator</h1>
+				<h2>Creating tests for function: ` + functionName + ` </h2>
+				<hr>
+				<table class="descriptor" style="width:50%">
 					<tr>
-						<td>Row 1, Col 1</td>
-						<td>Row 1, Col 2</td>
-						<td>Row 1, Col 3</td>
+						<td>
+							parameters
+						</td>
+						<td>
+							<table class="content" style="width:100%">
+								<tr>
+									<td class="content">int score</td>
+									<td class="content">int alt</td>
+								</tr>
+							</table>    
+						</td>
 					</tr>
 					<tr>
-						<td>Row 2, Col 1</td>
-						<td>Row 2, Col 2</td>
-						<td>Row 2, Col 3</td>
+						<td>
+							full conditions
+						</td>
+						<td>
+							<table class="content" style="width:100%">
+								<tr>
+									<td class="content">score > 2600</td>
+									<td class="content">alt > 42 && score > 900</td>
+								</tr>
+							</table>    
+						</td>
 					</tr>
 					<tr>
-						<td>Row 3, Col 1</td>
-						<td>Row 3, Col 2</td>
-						<td>Row 3, Col 3</td>
+						<td>
+							single conditions
+						</td>
+						<td>
+							<table class="content" style="width:100%">
+								<tr>
+									<td class="content">score > 2600</td>
+									<td class="content">alt > 42</td>
+									<td class="content">score > 900</td>
+								</tr>
+							</table>    
+						</td>
 					</tr>
 				</table>
-				<br>
-				<h2>Texteingabefelder</h2>
-				<input type="text" placeholder="Textfeld 1">
-				<br>
-				<input type="text" placeholder="Textfeld 2">
-				<br>
-				<input type="text" placeholder="Textfeld 3">
+				<hr>
+				<table class="descriptor">
+					<tr>
+						<td style="padding-right:12px">
+							sorted by parameter
+						</td>
+						<td>
+							<table class="content" style="width:100%">
+								<tr>
+									<th class="content">score</th>
+									<th class="content">alt</th>
+								</tr>
+								<tr>
+									<td class="content">>2600</td>
+									<td class="content">>42</td>
+								</tr>
+								<tr>
+									<td class="content">>900</td>
+									<td class="content"></td>
+								</tr>
+							</table>    
+						</td>
+					</tr>
+				</table>
+				<hr>
+				<h2> Example values for generated tests </h2>
+				<table class="content" style="width:50%">
+					<tr>
+					<th class="content">score</th>
+					<th class="content">alt</th>
+					<th class="content">set name to enable generation</th>
+					</tr>
+					<tr>
+					<td class="content">100</td>
+					<td class="content">200</td>
+					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+					<tr>
+					<td class="content">100</td>
+					<td class="content">200</td>
+					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+					<tr>
+					<td class="content">100</td>
+					<td class="content">200</td>
+					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+				</table>    
+				<button>Generate Tests</button>
 			</body>
-			</html>
+			</html>		
 		`;
 	}
 
