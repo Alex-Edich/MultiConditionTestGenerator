@@ -84,9 +84,132 @@ function activate(context) {
         {});
         return panel;
     }
+    /**
+     * Table showing all avaiable parameters
+     * @param parameterNames
+     * @returns
+     */
+    function createParamenterNameTable(parameterTypes, parameterNames) {
+        let parameterTable = `
+			<td>
+				parameters
+			</td>
+			<td>
+				<table class="content" style="width:100%">
+					<tr>					
+		`;
+        for (let i = 0; i < parameterNames.length; i++) {
+            parameterTable += `
+						<td class="content">` + parameterTypes[i] + ` ` + parameterNames[i] + `</td>
+			`;
+        }
+        parameterTable += `
+					</tr>
+				</table>    
+			</td>
+		`;
+        return parameterTable;
+    }
+    /**
+     * Table showing full conditions inside certain statements
+     * @param fullConditions
+     * @returns
+     */
+    function createFullConditionsTable(fullConditions) {
+        let fullConditionsTable = `
+			<td>
+				full conditions
+			</td>
+			<td>
+				<table class="content" style="width:100%">
+					<tr>	
+		`;
+        for (let i = 0; i < fullConditions.length; i++) {
+            fullConditionsTable += `
+						<td class="content">` + fullConditions[i] + `</td>
+			`;
+        }
+        fullConditionsTable += `
+					</tr>
+				</table>    
+			</td>
+		`;
+        return fullConditionsTable;
+    }
+    /**
+     * Table showing all full conditions split up into single conditions
+     * @param singleConditions
+     * @returns
+     */
+    function createSingleConditionsTable(singleConditions) {
+        let singleConditionsTable = `
+			<td>
+				single conditions
+			</td>
+			<td>
+				<table class="content" style="width:100%">
+					<tr>	
+		`;
+        for (let i = 0; i < singleConditions.length; i++) {
+            singleConditionsTable += `<td class="content">` + singleConditions[i][0];
+            for (let j = 1; j < singleConditions.length; j++) {
+                singleConditionsTable += ` ` + singleConditions[i][j];
+            }
+            singleConditionsTable += `</td>`;
+        }
+        singleConditionsTable += `
+					</tr>
+				</table>    
+			</td>
+		`;
+        return singleConditionsTable;
+    }
+    /**
+     * Table showing all condition values sorted by variable
+     * @param parameterNames
+     * @param singleConditions
+     * @returns
+     */
+    function createSortedValuesTable(parameterNames, singleConditions) {
+        let sortedValues = [];
+        let longestColumn = 0;
+        parameterNames.forEach(name => {
+            let sortColumn = [];
+            sortColumn.push(name);
+            singleConditions.forEach(condition => {
+                if (condition.includes(name)) {
+                    sortColumn.push((condition[0] === name) ? condition[2] : condition[0]);
+                }
+            });
+            sortedValues.push(sortColumn);
+            if (sortColumn.length > longestColumn) {
+                longestColumn = sortColumn.length;
+            }
+        });
+        let sortedValuesTable = ` 
+			<td style="padding-right:12px">
+				sorted by parameter
+			</td>
+			<td>
+				<table class="content" style="width:100%">`;
+        for (let y = 0; y < longestColumn; y++) {
+            sortedValuesTable += `<tr>`;
+            for (let x = 0; x < parameterNames.length; x++) {
+                sortedValuesTable +=
+                    ((y === 0) ? `<th` : `<td`) + ` class="content">` +
+                        ((sortedValues[x].length > y) ? sortedValues[x][y] : ``) +
+                        `</td>`;
+            }
+            sortedValuesTable += `</tr>`;
+        }
+        sortedValuesTable += `
+				</table>    
+			</td> 
+		`;
+        return sortedValuesTable;
+    }
     function getWebviewContent(functionName, returnType, parameterNames, parameterTypes, fullConditions, singleConditions, calculatedCases) {
-        let caseTable = ` caseTable`;
-        // HTML für das Popup erstellen
+        // HTML for the Config view
         return `
 			<!DOCTYPE html>
 			<html>
@@ -95,13 +218,14 @@ function activate(context) {
 			</head>
 			<style>
 				table.content, td.content, th.content {
-					border: 1px solid black;
+					border: 1px solid DimGray;
 					border-collapse: collapse;
 				}
 				td {
 					padding: 2px;
 					padding-left: 5px;
 					padding-right: 5px;
+					text-align: center;
 				}
 				input {
 					color: LightGray;
@@ -110,98 +234,139 @@ function activate(context) {
 			</style>
 			<body>
 				<h1>Multiple Condition Test Generator</h1>
-				<h2>Creating tests for function: ` + functionName + ` </h2>
+				<h2>Creating tests for function: ` + returnType + ` ` + functionName + ` </h2>
 				<hr>
 				<table class="descriptor" style="width:50%">
 					<tr>
-						<td>
-							parameters
-						</td>
-						<td>
-							<table class="content" style="width:100%">
-								<tr>
-									<td class="content">int score</td>
-									<td class="content">int alt</td>
-								</tr>
-							</table>    
-						</td>
+						` + createParamenterNameTable(parameterTypes, parameterNames) + `
 					</tr>
 					<tr>
-						<td>
-							full conditions
-						</td>
-						<td>
-							<table class="content" style="width:100%">
-								<tr>
-									<td class="content">score > 2600</td>
-									<td class="content">alt > 42 && score > 900</td>
-								</tr>
-							</table>    
-						</td>
+						` + createFullConditionsTable(fullConditions) + `
 					</tr>
 					<tr>
-						<td>
-							single conditions
-						</td>
-						<td>
-							<table class="content" style="width:100%">
-								<tr>
-									<td class="content">score > 2600</td>
-									<td class="content">alt > 42</td>
-									<td class="content">score > 900</td>
-								</tr>
-							</table>    
-						</td>
+						` + createSingleConditionsTable(singleConditions) + `
 					</tr>
 				</table>
 				<hr>
 				<table class="descriptor">
 					<tr>
-						<td style="padding-right:12px">
-							sorted by parameter
-						</td>
-						<td>
-							<table class="content" style="width:100%">
-								<tr>
-									<th class="content">score</th>
-									<th class="content">alt</th>
-								</tr>
-								<tr>
-									<td class="content">>2600</td>
-									<td class="content">>42</td>
-								</tr>
-								<tr>
-									<td class="content">>900</td>
-									<td class="content"></td>
-								</tr>
-							</table>    
-						</td>
+						` + createSortedValuesTable(parameterNames, singleConditions) + `
+					</tr>
+				</table>
+				<hr>
+				<h2> Possible conditional combinations </h2>
+				<table class="content" style="width:50%">
+					<tr>
+						<th class="content">score > 2600</th>
+						<th class="content">score > 900</th>
+						<th class="content">alt > 42</th>
+						<th class="content" style="border-left-width:3px">Possible?</th>
+						<th class="content">Case Num</th>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">1</td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">2</td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">3</td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10007;</span></td>
+						<td class="content"></td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">4</td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10007;</span></td>
+						<td class="content"></td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10007;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">5</td>
+					</tr>
+					<tr>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content"><span>&#10003;</span></td>
+						<td class="content" style="border-left-width:3px"><span>&#10003;</span></td>
+						<td class="content">6</td>
 					</tr>
 				</table>
 				<hr>
 				<h2> Example values for generated tests </h2>
 				<table class="content" style="width:50%">
 					<tr>
-					<th class="content">score</th>
-					<th class="content">alt</th>
-					<th class="content">set name to enable generation</th>
+						<th class="content">case</th>
+						<th class="content">score</th>
+						<th class="content">alt</th>
+						<th class="content">set name to enable generation</th>
 					</tr>
 					<tr>
-					<td class="content">100</td>
-					<td class="content">200</td>
-					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+						<td class="content">1</td>
+						<td class="content">900</td>
+						<td class="content">42</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
 					</tr>
 					<tr>
-					<td class="content">100</td>
-					<td class="content">200</td>
-					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+						<td class="content">2</td>
+						<td class="content">900</td>
+						<td class="content">43</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
 					</tr>
 					<tr>
-					<td class="content">100</td>
-					<td class="content">200</td>
-					<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+						<td class="content">3</td>
+						<td class="content">1750</td>
+						<td class="content">42</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+					<tr>
+						<td class="content">4</td>
+						<td class="content">1750</td>
+						<td class="content">43</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+					<tr>
+						<td class="content">5</td>
+						<td class="content">2601</td>
+						<td class="content">42</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
+					</tr>
+					<tr>
+						<td class="content">6</td>
+						<td class="content">2601</td>
+						<td class="content">43</td>
+						<td class="content"><input type="text" placeholder="..." style="width:97.5%"></td>
 					</tr>
 				</table>    
+				<h2></h2>
 				<button>Generate Tests</button>
 			</body>
 			</html>		
