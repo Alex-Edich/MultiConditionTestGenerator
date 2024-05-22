@@ -14,24 +14,27 @@
   "contributes": {
     "commands": [
       {
-        "command": "mctg.helloWorld",
-        "title": "Hello World"
+        "command": "mctg.debugStart",
+        "title": "DEBUG: Start"
       }, {
-        "command": "mf.createSampleCode",
-        "title": "Create Sample Code"
+        "command": "mctg.createSampleCode",
+        "title": "DEBUG: Create Sample Code"
       }, {
-        "command": "mf.sendParametersToPopup",
+        "command": "mctg.sendParametersToPopup",
         "title": "Generate Test Cases"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "command": "mf.createSampleCode",
+          "command": "mctg.debugStart",
           "group": "navigation"
         }, {
-          "when": "mf.contextOptionVisible",
-          "command": "mf.sendParametersToPopup",
+          "command": "mctg.createSampleCode",
+          "group": "navigation"
+        }, {
+          "when": "mctg.contextOptionVisible",
+          "command": "mctg.sendParametersToPopup",
           "group": "navigation"
         }
       ]
