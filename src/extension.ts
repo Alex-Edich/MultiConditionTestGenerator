@@ -154,14 +154,24 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 	
 	//MARK: popup and table generation
+
+	/**
+	 * this is the panel for creating the test file. This is stored so it can be closed after completion
+	 */
+	let creationPanel : vscode.WebviewPanel;
+
 	/**
 	 * opens a popup for the generated test
 	 * @param functionName the name of the function in the popup title
-	 * @returns the popup panel
 	 */
-	function openPopup(functionName: string) {
-		// Erstelle ein Webview-Panel
-		const panel = vscode.window.createWebviewPanel(
+	function openCreationPopup(functionName: string) {
+		//this fails if popup does not exist yes. Close, if it does exist
+		try {
+			creationPanel.dispose();
+		} catch (error) {
+			
+		}
+		creationPanel = vscode.window.createWebviewPanel(
 			'popup', // Eindeutiger Bezeichner
 			'mctg: ' + functionName,
 			vscode.ViewColumn.Beside,// One,
@@ -169,7 +179,6 @@ export function activate(context: vscode.ExtensionContext) {
 				enableScripts: true // Necessary to execute scripts by pressing the button
 			}
 		);
-		return panel;
 	}
 
 	/**
@@ -770,6 +779,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(createSampleCode);
 
 	//MARK: Command: Popup
+	
 	let sendParametersToPopup = vscode.commands.registerCommand('mctg.sendParametersToPopup', (uri: vscode.Uri) => {
 		if (!uri || uri.scheme !== 'file') {
 			vscode.window.showErrorMessage('No file seleted');
@@ -791,13 +801,13 @@ export function activate(context: vscode.ExtensionContext) {
 		const parameterNames : string[] = methodContent[3];
 		const fullConditions : string[]= methodContent[4];	
 		// open window next to coding area
-		const panel = openPopup(functionName);
+		openCreationPopup(functionName);
 		// HTML content of the popup
         htmlContent = getWebviewContent(functionName, returnType, parameterNames, parameterTypes, fullConditions);
         // set HTML content of hte Webview-Panel
-        panel.webview.html = htmlContent;
+        creationPanel.webview.html = htmlContent;
 
-		panel.webview.onDidReceiveMessage(async message => {
+		creationPanel.webview.onDidReceiveMessage(async message => {
             if (message.command === 'createTestFile') {
 				const inputs : string[] = message.inputs;
                 const mainPath = path.dirname(uri.fsPath);
@@ -838,7 +848,7 @@ export function activate(context: vscode.ExtensionContext) {
 						testStrings.push(testString);
 					}
 				}
-                await createTestFile(testFilePath, testStrings);
+                await createTestFile(testFilePath, testStrings, creationPanel);
                 
             }
         }, undefined, context.subscriptions);
@@ -851,8 +861,8 @@ export function activate(context: vscode.ExtensionContext) {
 function createTestString(testName : string, returnType : string, functionName : string, 
 		parameterTypes : string[], parameterNames : string[], parameterTestValues : string[], 
 		mainClassName : string) : string {
-	let code : string = `
-	@Test
+	let code : string = 
+	`@Test
 	public void ` + testName + `() {`;
 	for (let parameter = 0; parameter < parameterNames.length; parameter++) {
 		code += `
@@ -865,13 +875,12 @@ function createTestString(testName : string, returnType : string, functionName :
 	}
 		
 	code +=	`);
-	Assert.fail("TODO: Create an assertion for an expected result. ");
-	}
-	`;
+		Assert.fail("TODO: Create an assertion for an expected result. ");
+	}`;
 	return code;
 }
 
-async function createTestFile(testFilePath: string, testStrings : string[]) {
+async function createTestFile(testFilePath: string, testStrings : string[], creationPanel : vscode.WebviewPanel) {
     const testDir = path.dirname(testFilePath);
 
     if (!fs.existsSync(testDir)) {
@@ -880,9 +889,10 @@ async function createTestFile(testFilePath: string, testStrings : string[]) {
 
 	let tests : string = "";
 	testStrings.forEach(element => {
-		tests += element;
+		tests += `\n\n\t` + element;
 	});
-
+	creationPanel.dispose();
+	//create new file if it does not exist yet
     if (!fs.existsSync(testFilePath)) {
 		const fileNodes = testFilePath.split("\\");
 		const testFile = fileNodes[fileNodes.length-1].replaceAll("\.java", "");
@@ -892,15 +902,30 @@ async function createTestFile(testFilePath: string, testStrings : string[]) {
 import org.junit.Assert;
 import org.junit.Test;
 public class ${testFile} {
-	${mainFile} ${mainFile} = new ${mainFile}();
-	${tests}
+	${mainFile} ${mainFile} = new ${mainFile}();${tests}
 }`;
         fs.writeFileSync(testFilePath, classString);
 		vscode.window.showInformationMessage(`Test file created: ${testFilePath}`);
+		//open new file
+		const testFileUri = vscode.Uri.file(testFilePath);
+		vscode.workspace.openTextDocument(testFileUri).then(document => {
+				vscode.window.showTextDocument(document);
+		});
+	//add to file if it already exists
     } else {
-		fs.writeFileSync(testFilePath, tests);
-        vscode.window.showWarningMessage('The file already exists ');
+		//open file
+		const testFileUri = vscode.Uri.file(testFilePath);
+		vscode.workspace.openTextDocument(testFileUri).then(document => {
+				vscode.window.showTextDocument(document);
+		});
+		//insert test code strings to class
+		let currentClassCode = fs.readFileSync(testFilePath, 'utf8');
+		const classEndIndex = currentClassCode.lastIndexOf('}');
+		currentClassCode = currentClassCode.substring(0, classEndIndex-1) + tests + `\n` + currentClassCode.substring(classEndIndex);
+		fs.writeFileSync(testFilePath, currentClassCode);
+		vscode.window.showInformationMessage(`Added new tests to: ${testFilePath}`);
     }
+	
 }
 
 // This method is called when your extension is deactivated
