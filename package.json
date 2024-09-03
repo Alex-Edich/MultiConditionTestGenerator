@@ -16,10 +16,12 @@
       {
         "command": "mctg.debugStart",
         "title": "DEBUG: Start"
-      }, {
+      },
+      {
         "command": "mctg.createSampleCode",
         "title": "DEBUG: Create Sample Code"
-      }, {
+      },
+      {
         "command": "mctg.sendParametersToPopup",
         "title": "Generate Test Cases"
       }
@@ -29,10 +31,12 @@
         {
           "command": "mctg.debugStart",
           "group": "navigation"
-        }, {
+        },
+        {
           "command": "mctg.createSampleCode",
           "group": "navigation"
-        }, {
+        },
+        {
           "when": "mctg.contextOptionVisible",
           "command": "mctg.sendParametersToPopup",
           "group": "navigation"
@@ -49,15 +53,18 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.88.0",
     "@types/mocha": "^10.0.3",
     "@types/node": "18.x",
+    "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
+    "@vscode/test-electron": "^2.3.6",
     "eslint": "^8.52.0",
     "glob": "^10.3.10",
     "mocha": "^10.2.0",
-    "typescript": "^5.2.2",
-    "@vscode/test-electron": "^2.3.6"
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "mctg": "file:"
   }
 }
